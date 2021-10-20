@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const Filehound = require('filehound');
 
 //Verificar si la ruta es de archivo o directorio
 const isFile = (absolutePath) =>  {
@@ -25,6 +26,64 @@ const getMdFile = (absolutePath) => {
     }
   }) 
 };
+
+//Obtener los archivos md del directorio
+const getMDFilesPathsFromFolder = (folderPath) => {
+  return new Promise((resolve, reject) => {
+    Filehound.create()
+    .paths(folderPath)
+    .ext('md')
+    .find()
+    .then((files) => { 
+      if(files.length === 0){
+        reject('No hay archivos .md en el directorio')
+      }else if(files.length >= 1){
+        resolve(files) 
+      }
+    })
+  })
+};
+
+
+const mdLinks = (inputPath) => {
+  //Obtener ruta absoluta
+  const absolutePath = path.isAbsolute(inputPath) ? inputPath : path.resolve(process.cwd(), inputPath);
+
+  //verificar si la ruta existe
+  const pathExist = fs.existsSync(absolutePath);
+  if(!pathExist){
+    console.log('Error: Ruta no existe. Ingresa una ruta válida.');
+    process.exit(1);
+  }
+
+  //Verificar si la ruta es de un archivo
+  isFile(absolutePath)
+  .then((isFile) => {
+    //si es archivo
+    if(isFile){
+      return getMdFile(absolutePath)
+    }else{
+      //si es directorio
+      return getMDFilesPathsFromFolder(absolutePath)
+    }  
+  })
+  .then((mdFiles) => {
+    console.log('resultado md links ', mdFiles);
+    //función para extraer links
+  })
+  .catch((err) => {
+    console.log(err);
+  })
+ 
+}
+
+mdLinks('/Users/karenp/Desktop/emptyFolder');
+
+/* /Users/karenp/Desktop/randomFiles2 */
+/* /Users/karenp/Desktop/randomFiles/recetas.md */
+/* /Users/karenp/Desktop/randomFiles */
+
+//-----------------------------------------------
 
 /* //Obtener los archivos md del directorio
 const getMDFilesPathsFromFolder = (folderPath) => {
@@ -54,44 +113,7 @@ const getMDFilesPathsFromFolder = (folderPath) => {
   })
 }; */
 
-
-const mdLinks = (inputPath) => {
-  //Obtener ruta absoluta
-  const absolutePath = path.isAbsolute(inputPath) ? inputPath : path.resolve(process.cwd(), inputPath);
-
-  //verificar si la ruta existe
-  const pathExist = fs.existsSync(absolutePath);
-  if(!pathExist){
-    console.log('Error: Ruta no existe. Ingresa una ruta válida.');
-    process.exit(1);
-  }
-
-  //Verificar si la ruta es de un archivo
-  isFile(absolutePath)
-  .then((isFile) => {
-    if(isFile){
-      return getMdFile(absolutePath)
-    }else{
-      //obtener files from directory
-    }  
-  })
-  .then((mdFiles) => {
-    console.log('Archivo de file path ', mdFiles);
-    //función para extraer links
-  })
-  .catch((err) => {
-    console.log(err);
-  })
- 
-}
-
-mdLinks('/Users/karenp/Desktop/randomFiles/recetas.md');
-
-/* /Users/karenp/Desktop/randomFiles2 */
-/* /Users/karenp/Desktop/randomFiles/recetas.md */
-/* /Users/karenp/Desktop/randomFiles */
-
-
+//------------------------------------------------
 
 /* const { readFile, readdir } = require('fs/promises');
 const { extname, join, isAbsolute } = require('path');
