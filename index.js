@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const Filehound = require('filehound');
+const markdownLinkExtractor = require('markdown-link-extractor');
 
 //Verificar si la ruta es de archivo o directorio
 const isFile = (absolutePath) =>  {
@@ -44,6 +45,33 @@ const getMDFilesPathsFromFolder = (folderPath) => {
   })
 };
 
+//Función para leer el archivo 
+const extractTextFromFile = (mdFiles) => {
+  const promisesArray = mdFiles.map( file => fs.promises.readFile(file, 'utf8'));
+  return Promise.all(promisesArray)
+};
+
+//Función para extraer links
+const getLinksInfo = (filesText, ) => {
+  return new Promise((resolve, reject) => {
+    let LinksInfo = [];
+    for (const text of filesText){
+      const info = markdownLinkExtractor(text, true);
+
+      if(info.length >= 1){  
+        LinksInfo = LinksInfo.concat(info);
+      }
+    }
+
+    if(LinksInfo.length ===  0){
+      reject('No se encontraron links')
+    }else if(LinksInfo.length >= 1){
+      resolve(LinksInfo)
+    }    
+  })
+};
+
+
 
 const mdLinks = (inputPath) => {
   //Obtener ruta absoluta
@@ -68,20 +96,27 @@ const mdLinks = (inputPath) => {
     }  
   })
   .then((mdFiles) => {
-    console.log('resultado md links ', mdFiles);
-    //función para extraer links
+    return extractTextFromFile(mdFiles)
+  })
+  .then((filesText) => {
+    return getLinksInfo(filesText)
+  })
+  .then((linksInfo) => {
+    console.log(linksInfo);
   })
   .catch((err) => {
     console.log(err);
+    process.exit(1);
   })
- 
-}
 
-mdLinks('/Users/karenp/Desktop/emptyFolder');
+};
+
+mdLinks('/Users/karenp/Desktop/randomFiles');
 
 /* /Users/karenp/Desktop/randomFiles2 */
 /* /Users/karenp/Desktop/randomFiles/recetas.md */
 /* /Users/karenp/Desktop/randomFiles */
+/* /Users/karenp/Desktop/randomFiles/subcarpeta/coolMarkdown.md */
 
 //-----------------------------------------------
 
