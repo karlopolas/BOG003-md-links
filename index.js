@@ -52,11 +52,16 @@ const extractTextFromFile = (mdFiles) => {
 };
 
 //Función para extraer links
-const getLinksInfo = (filesText, ) => {
+const getLinksInfo = (filesText, filePath) => {
   return new Promise((resolve, reject) => {
     let LinksInfo = [];
     for (const text of filesText){
-      const info = markdownLinkExtractor(text, true);
+      const info = markdownLinkExtractor(text, true)
+      .map(linkObject => ({
+        href: linkObject.href,
+        text: linkObject.text,
+        file: filePath
+      }))
 
       if(info.length >= 1){  
         LinksInfo = LinksInfo.concat(info);
@@ -111,7 +116,7 @@ const mdLinks = (inputPath) => {
 
 };
 
-mdLinks('/Users/karenp/Desktop/randomFiles');
+mdLinks('/Users/karenp/Desktop/randomFiles/recetas.md');
 
 /* /Users/karenp/Desktop/randomFiles2 */
 /* /Users/karenp/Desktop/randomFiles/recetas.md */
